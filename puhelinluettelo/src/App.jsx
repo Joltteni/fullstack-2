@@ -2,25 +2,22 @@ import { useState } from 'react'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
-import axios from 'axios'
 import { useEffect } from 'react'
+import personsService from './services/persons'
 
 const App = () => {
-    const [persons, setPersons] = useState([
-  ])
-
-  useEffect(() => {
-    console.log('effect')
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(response.data)
-      })
-  }, [])
-
+  const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filtered, setFilter] = useState('')
+
+  useEffect(() => {
+    personsService
+      .getAll()
+      .then(response => {
+        setPersons(response.data)
+      })  
+}, [])
 
   const addPhoneNumber = (event) => {
     event.preventDefault()
@@ -30,6 +27,7 @@ const App = () => {
       number: newNumber,
       id: persons.length+1 //id +1 jokasee
     }
+    personsService.create(phoneBookObject)
     setPersons(persons.concat(phoneBookObject))
   }
     else {
@@ -57,10 +55,9 @@ const App = () => {
       <PersonForm addPhoneNumber={addPhoneNumber} newName={newName} newNumber={newNumber} handleNameChange={handleNameChange} handleNumberChange={handleNumberChange}/>
 
       <h3>Numbers</h3>
-      <Persons persons={persons} filtered={filtered}/>
+      <Persons persons={persons} setPersons={setPersons} filtered={filtered}/>
     </div>
   )
-
 }
 
 export default App
