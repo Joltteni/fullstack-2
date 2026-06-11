@@ -9,31 +9,6 @@
       "name": "Mary Poppendieck",
       "number": "39-23-6423122",
       "id": "4"
-    },
-    {
-      "name": "adwa",
-      "number": "213",
-      "id": "Cr-A11w7_F8"
-    },
-    {
-      "name": "joni",
-      "number": "343",
-      "id": "7mEyJv9NB7U"
-    },
-    {
-      "name": "paska",
-      "number": "perse",
-      "id": "jaxWepdHtuk"
-    },
-    {
-      "name": "fe",
-      "number": "fe",
-      "id": "tLC8DWxzazo"
-    },
-    {
-      "name": "de",
-      "number": "de",
-      "id": "EJjWd65NLz8"
     }
   ],
   "$schema": "./node_modules/json-server/schema.json"

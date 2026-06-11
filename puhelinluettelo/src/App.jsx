@@ -4,12 +4,17 @@ import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import { useEffect } from 'react'
 import personsService from './services/persons'
+import Notification from './components/Notification'
+import './index.css'
+
 
 const App = () => {
   const [persons, setPersons] = useState([])
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [filtered, setFilter] = useState('')
+  const [errorMessage, setErrorMessage] = useState(null)
+  const [succesMessage, setSuccessMessage] = useState(null)
 
   useEffect(() => {
     personsService
@@ -17,21 +22,39 @@ const App = () => {
       .then(response => {
         setPersons(response.data)
       })  
-}, [])
+}, [persons])
 
   const addPhoneNumber = (event) => {
     event.preventDefault()
-    if (!persons.some(person => person.name === newName)) { //nimi listassa?
+  
     const phoneBookObject = {
       name: newName,
       number: newNumber,
-      id: persons.length+1 //id +1 jokasee
+      id: persons.length+1 //randomize servul
     }
+    if (!persons.some(person => person.name === newName)) { //nimi listassa?
     personsService.create(phoneBookObject)
     setPersons(persons.concat(phoneBookObject))
-  }
+    setSuccessMessage(`Added ${newName}`)
+    setTimeout(() => {
+          setSuccessMessage(null)
+        }, 5000)
+    }
+  
     else {
-      alert(`${newName} has already been added to phonebook`)
+      if (!window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)) return
+      let updatePerson=persons.find(person => person.name === newName)
+      personsService.update(updatePerson.id,phoneBookObject)
+      .then(() => {
+          setSuccessMessage(`Updated ${updatePerson.name}'s phone number`)
+    setTimeout(() => {
+          setSuccessMessage(null)
+        }, 5000)})
+        .catch (() => {
+           setErrorMessage(`${updatePerson.name} has already been removed from the server`)
+      setTimeout(() => setErrorMessage(null), 5000)
+        }
+        )
     }
     setNewName('') //input tyhjäks
     setNewNumber('') //input tyhjäks
@@ -50,12 +73,13 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
+      <Notification successMessage={succesMessage} errorMessage={errorMessage} />
       <Filter filtered={filtered} handleFilterChange={handleFilterChange}/>
       <h3>add a new</h3>
       <PersonForm addPhoneNumber={addPhoneNumber} newName={newName} newNumber={newNumber} handleNameChange={handleNameChange} handleNumberChange={handleNumberChange}/>
 
       <h3>Numbers</h3>
-      <Persons persons={persons} setPersons={setPersons} filtered={filtered}/>
+      <Persons persons={persons} setPersons={setPersons} setSuccessMessage={setSuccessMessage} filtered={filtered}/>
     </div>
   )
 }
