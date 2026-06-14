@@ -2,6 +2,8 @@ import axios from "axios"
 import { useState } from "react"
 import { useEffect } from "react"
 
+const VITE_API_KEY = import.meta.env.VITE_API_KEY
+
 const Search = (props) => {
 return(
   <div>
@@ -9,29 +11,47 @@ return(
   </div>
 )
 }
-const CountryInformationButton = (props) => {
+const CountryInformationButton = ({ country }) => {
   const [showInfo, setShowInfo] = useState(false)
-  const country = props.country
-
   return (
     <div>
       <button onClick={() => setShowInfo(!showInfo)}>
         {showInfo ? 'hide' : 'show'}
       </button>
-      {showInfo &&
-        <div>
-          <h2>{country.name.common}</h2>
-          <p>Capital: {country.capital}</p>
-          <p>Area: {country.area}</p>
-          <h3>Languages</h3>
-          <ul>
-            {Object.values(country.languages).map(lang => (
-              <li key={lang}>{lang}</li>
-            ))}
-          </ul>
-          <img src={country.flags.png}/>
-        </div>
+      {showInfo && <CountryInfo country={country} />}
+    </div>
+  )
+}
+const CountryInfo = ({ country }) => {
+  const [weather, setWeather] = useState(null)
+
+  useEffect(() => {
+    axios.get('https://api.openweathermap.org/data/2.5/weather', {
+      params: {
+        q: country.capital[0],
+        appid: VITE_API_KEY,
+        units: 'metric'
       }
+    })
+    .then(response => setWeather(response.data))
+  }, [])
+
+  return (
+    <div>
+      <h2>{country.name.common}</h2>
+      <p>Capital: {country.capital}</p>
+      <p>Area: {country.area}</p>
+      <h3>Languages</h3>
+      <ul>
+        {Object.values(country.languages).map(lang => (
+          <li key={lang}>{lang}</li>
+        ))}
+      </ul>
+      <img src={country.flags.png}/>
+      <h2>Weather in {country.capital[0]}</h2>
+      {weather && <p>Temperature: {weather.main.temp}°C</p>}
+      {weather && <img src={`https://openweathermap.org/img/wn/${weather.weather[0].icon}@2x.png`} />}
+      {weather && <p>Wind: {weather.wind.speed} m/s</p>}
     </div>
   )
 }
@@ -55,20 +75,8 @@ const Results = ({ filter }) => {
   )
 }
 else if (filterResults.length==1){
-    return (
-      <div>
-        <h2>{filterResults[0].name.common}</h2>
-        <p>Capital: {filterResults[0].capital}</p>
-        <p>Area: {filterResults[0].area}</p>
-        <h3>Languages</h3>
-        <ul>
-          {Object.values(filterResults[0].languages).map(lang => (
-            <li key={lang}>{lang}</li>
-          ))}
-        </ul>
-        <img src={filterResults[0].flags.png}/>
-      </div>
-    )
+  return <CountryInfo country={filterResults[0]} />
+
 }
 else if (filterResults.length>10 && filter!=null && filter!=''){
   return (
